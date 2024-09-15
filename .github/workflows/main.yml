@@ -1,0 +1,61 @@
+name: Deployment From Github To AWS Beanstalk
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Latest Repository
+        uses: actions/checkout@main
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Project
+        run: npm run build
+
+
+      - name: Install & generate a htpasswd
+        run: |
+          sudo apt-get install apache2-utils
+          mkdir -p .platform/nginx/conf.d
+          htpasswd -cb .platform/nginx/conf.d/htpasswd username ${{ secrets.HTPASSWD }}
+
+
+      - name: Generate Deployment Package
+        run: |
+          zip -r deploy.zip . -x "node_modules/*" -x ".git/*" -x "*.log" -x "*.tmp"
+
+
+      - name: Get timestamp
+        uses: gerred/actions/current-time@master
+        id: current-time
+
+      - name: Run string replace
+        uses: frabert/replace-string-action@master
+        id: format-time
+        with:
+          pattern: '[:\.]+' 
+          string: "${{ steps.current-time.outputs.time }}"
+          replace-with: '-'
+          flags: 'g'
+
+
+      - name: Deploy to ElasticBeanstalk
+        uses: einaregilsson/beanstalk-deploy@v14
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: mastering-backend
+          environment_name: mastering-backend
+          version_label: "deployment-${{ steps.format-time.outputs.replaced }}"
+          region: eu-central-1
+          deployment_package: deploy.zip
