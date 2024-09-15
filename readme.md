@@ -3,7 +3,7 @@
 This repository provides a template for deploying an frontend or/and backend application on AWS Elastic Beanstalk (version: AL2023) with a custom Nginx configuration.
 **Please consider your Beanstalk Environment Version before following this tutorial!**
 
-It took me some days to debug and build this template, i was very frustrated that AWS has very bad documentation, so i have a guide here to hopefully help someone. I tested it only with NodeJS, but I think it works also with GO, etc. You need to 
+It took me some days to debug and build this template, i was very frustrated that AWS has very bad documentation, so i have a guide here to hopefully help someone. I tested it only with NodeJS, but I think it works also with GO, etc.
 
 The setup includes:
  - Basic authentication
@@ -44,7 +44,7 @@ Procfile	                        Specifies commands to start your application (e
 - **Pre-build Hooks**: Run before the build process, useful for setting up prerequisites.
 - **Post-build Hooks**: Execute after the build process, used to finalize configurations or perform additional tasks.
 
-## Setup and Configuration
+# Setup and Configuration
 
 ## VPC
 
