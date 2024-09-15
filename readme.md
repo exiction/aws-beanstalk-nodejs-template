@@ -34,7 +34,7 @@ Procfile	                        Specifies commands to start your application (e
 - `...`	                                Additional files or directories
 ```
 
-# What we want to archive
+## What we want to archive
 You are able to access your Elastic Beanstalk environment at the main route /. This route is not secured to prevent Elastic Load Balancer's health checks from failing with a 403 error due to .htpasswd protection. Instead, I've secured a specific route folder, /resource/, where the Node.js Express server handles responses. But you can change everything now inside the nginx.conf.
 
 
