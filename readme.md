@@ -51,7 +51,7 @@ Procfile	                        Specifies commands to start your application (e
 - create a default VPC.
   - I have 2 public subnets and one private.
 
-## Subnet Details
+### Subnet Details
 
 The following table provides details about the subnets in the VPC:
 
