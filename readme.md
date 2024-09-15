@@ -1,7 +1,7 @@
 # AWS Elastic Beanstalk AL2023 Setup Template
 
 This repository provides a template for deploying an frontend or/and backend application on AWS Elastic Beanstalk (version: AL2023) with a custom Nginx configuration.
-- Please consider your Beanstalk Environment Version before following this tutorial!
+**Please consider your Beanstalk Environment Version before following this tutorial!**
 
 It took me some days to debug and build this template, i was very frustrated that AWS has very bad documentation, so i have a guide here to hopefully help someone. I tested it only with NodeJS, but I think it works also with GO, etc. You need to 
 
@@ -12,8 +12,30 @@ The setup includes:
  - src/ with typescript (not specific)
  - git pipeline
 
+
+
+## Directory Structure
+```
+.platform/	                        Platform-specific configuration files and scripts
+├── nginx/	                        Nginx configuration files
+│ ├── nginx.conf	                Main Nginx configuration file
+│     └── conf.d/	                Directory for additional Nginx configuration files
+│         └── custom.conf	        Custom Nginx configuration for basic authentication and routing
+│         └── elasticbeanstalk/
+│             ├── 00_application.conf	Default Nginx location configuration file
+│             ├── 01_instance.conf	Custom Location to reverse proxy the instance on port 8080
+├── hooks/	                        Deployment hooks
+│ └── postdeploy/	                Hooks that run after application deployment
+│     ├── 00_move_htpasswd.sh	                Script to move .htpasswd file to Nginx configuration directory
+│     ├── 01_move_custom_nginx_locations.sh	Script to move custom Nginx location files to Nginx configuration directory
+│     └── 02_create_nginx_config.sh	        Script to replace default nginx.conf with a custom configuration
+src/	                                Source code for the application (e.g., TypeScript)
+Procfile	                        Specifies commands to start your application (e.g., web: npm start)
+- `...`	                                Additional files or directories
+```
+
 ## A word to .ebextensions
-- Some documentation says that the folder `.ebextensions` is still supported in AL2023, some not. So in my experience it throwed just errors. So use the `.platform` folder where you can place your configurations. I mostly explored them using `ls -la` with `hooks`. Would be better to SSH in it.
+- Some documentation says that the folder `.ebextensions` is still supported in AL2023, some not. So in my experience it just throwed errors. So use the `.platform` folder, to create custom configurations and move/cp them with a hook shell. I mostly explored them using `ls -la` with `hooks`. Would be better explore it using SSH..
 
 ## Key Points About Hooks:
 (Instance deployment workflow)[https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/platforms-linux-extend.html#platforms-linux-extend.workflow]
@@ -22,36 +44,39 @@ The setup includes:
 - **Pre-build Hooks**: Run before the build process, useful for setting up prerequisites.
 - **Post-build Hooks**: Execute after the build process, used to finalize configurations or perform additional tasks.
 
-
-## Directory Structure
-
-- `.platform/`
-  - `nginx/`
-    - `nginx.conf`          # Custom Nginx configuration file
-    - `conf.d/`
-      - `custom.conf`       # Custom Nginx configuration for basic authentication and routing
-  - `hooks/`
-    - `postdeploy/`
-      - `00_move_htpasswd.sh`               # Script to move .htpasswd file from zip package to Nginx configuration directory
-      - `01_move_custom_nginx_locations.sh` # Script to move custom defined nginx locations from zip package to Nginx configuration directory
-	  - `02_create_nginx_config.sh`          # Script to replace default nginx.conf with custom configuration
-- `src/`                  # Source code for the application (in my case its typescript)
-- `Procfile`              # Specifies commands to start your application
-- `...`
-
 ## Setup and Configuration
 
 ## VPC
 
 - create a default VPC.
   - I have 2 public subnets and one private.
-  | Name       | Subnet-ID            | Status    | VPC                           | IPv4-CIDR | IPv6-CIDR | IPv6 CIDR association ID | Available IPv4 Addresses | Availability Zone | Availability Zone-ID | Network Border Group | Routing Table                                      | Network ACL                  | Default Subnet | Automatically assign public IPv4 address | Automatically assign customer IPv4 address | Customer IPv4 Pool | Automatically assign IPv6 address | Owner-ID      |
+
+## Subnet Details
+
+The following table provides details about the subnets in the VPC:
+
+| Name       | Subnet-ID            | Status    | VPC                           | IPv4-CIDR | IPv6-CIDR | IPv6 CIDR Association ID | Available IPv4 Addresses | Availability Zone | Availability Zone-ID | Network Border Group | Routing Table                                      | Network ACL                  | Default Subnet | Automatically Assign Public IPv4 Address | Automatically Assign Customer IPv4 Address | Customer IPv4 Pool | Automatically Assign IPv6 Address | Owner-ID      |
 |------------|-----------------------|-----------|-------------------------------|------------|-----------|--------------------------|---------------------------|-------------------|-----------------------|-----------------------|----------------------------------------------------|-------------------------------|----------------|-------------------------------------------|------------------------------------------------|--------------------|------------------------------|----------------|
-| private    | subnet-0044aa8c4fe596060 | Available | vpc-05f40cd834b0a1544 | 10.0.2.0/24 | –         | –                        | 251                       | eu-central-1a     | euc1-az2              | eu-central-1          | rtb-0b30ce337c146fea0 | private                     | acl-06ae7a4b804f8f325 | No               | No                                         | No                                             | -                  | No                           | 654654580574  |
-| public     | subnet-0eece2c5fa528937e | Available | vpc-05f40cd834b0a1544 | 10.0.1.0/24 | –         | –                        | 248                       | eu-central-1a     | euc1-az2              | eu-central-1          | rtb-08f0ae2f0842ca785 | public                      | acl-06ae7a4b804f8f325 | No               | No                                         | No                                             | -                  | No                           | 654654580574  |
-| public-1   | subnet-0de00ef59b8508ca1 | Available | vpc-05f40cd834b0a1544 | 10.0.3.0/24 | –         | –                        | 250                       | eu-central-1b     | euc1-az3              | eu-central-1          | rtb-08f0ae2f0842ca785 | public                      | acl-06ae7a4b804f8f325 | No               | No                                         | No                                             | -                  | No                           | 654654580574  |
+| private    | subnet-... | Available | vpc-... | 10.0.2.0/24 | –         | –                        | 251                       | eu-central-1a     | euc1-az2              | eu-central-1          | rtb-... | private                     | acl-... | No               | No                                         | No                                             | -                  | No                           | 654656580572  |
+| public     | subnet-... | Available | vpc-... | 10.0.1.0/24 | –         | –                        | 248                       | eu-central-1a     | euc1-az2              | eu-central-1          | rtb-... | public                      | acl-... | No               | No                                         | No                                             | -                  | No                           | 654656580572  |
+| public-1   | subnet-... | Available | vpc-... | 10.0.3.0/24 | –         | –                        | 250                       | eu-central-1b     | euc1-az3              | eu-central-1          | rtb-... | public                      | acl-... | No               | No                                         | No                                             | -                  | No                           | 654656580572  |
 
+### IAM Elastic Beanstalk Role
+- the IAM role is used to create a beanstalk environment. The role needs those authorizations:
+- AmazonEC2FullAccess: Grants full permissions to manage EC2 instances, which are used by Elastic Beanstalk to run the application.
+- AmazonS3FullAccess: Provides full access to S3, allowing Elastic Beanstalk to store and retrieve application code and other assets.
+- AWSElasticBeanstalkWebTier: Allows management of the Elastic Beanstalk web application tier, which handles HTTP requests and serves web content.
+- AWSElasticBeanstalkWorkerTier: Grants permissions for the Elastic Beanstalk worker tier, which processes background tasks or jobs asynchronously.
+- CloudWatchFullAccess: Provides full access to CloudWatch, enabling monitoring and logging of application performance and health metrics.
+(I dont think that Full access is needed, but I dont want to deal with this the whole time.. I mean in the end, we just want to code, not configure, which should be the main purpose of Beanstalk)
 
+### IAM Github pipeline user
+- create a user with a "AdministratorAccess-AWSElasticBeanstalk" permission and create a "access key" which you need for the pipeline secret (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+
+### Create Github secrets
+- AWS_ACCESS_KEY_ID (your AWS pipeline user to push the ZIP deployment)
+- AWS_SECRET_ACCESS_KEY (your AWS pipeline user to push the ZIP deployment)
+- HTPASSWD (for basic auth, just think of one)
 
 ### Nginx Configuration
 
@@ -63,7 +88,6 @@ The setup includes:
 ### Basic Authentication
 
 - **`htpasswd`**: A file will be generated in the git pipeline (using secrets) and moved to the Nginx configuration directory to handle basic authentication. The `.htpasswd` file is used to secure certain routes.
-- The username can be changed in the pipeline "main.yml" (default: "username")
 
 - **`00_move_htpasswd.sh`**: A script in `.platform/hooks/postdeploy/` that moves the `.htpasswd` file from the deployment package to the Nginx configuration directory and restarts Nginx.
 
