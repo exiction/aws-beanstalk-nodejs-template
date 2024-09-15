@@ -34,6 +34,10 @@ Procfile	                        Specifies commands to start your application (e
 - `...`	                                Additional files or directories
 ```
 
+# The Result
+You can access your Elastic Beanstalk environment at the main route /. This route is not secured to prevent Elastic Load Balancer's health checks from failing with a 403 error due to .htpasswd protection. Instead, I've secured a specific route folder, /resource/, where the Node.js Express server handles responses. But you can change everything now inside the nginx.conf.
+
+
 ## A word to .ebextensions
 - Some documentation says that the folder `.ebextensions` is still supported in AL2023, some not. So in my experience it just throwed errors. So use the `.platform` folder, to create custom configurations and move/cp them with a hook shell. I mostly explored them using `ls -la` with `hooks`. Would be better explore it using SSH..
 
