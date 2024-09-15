@@ -45,6 +45,9 @@ The setup includes:
 
 - create a default VPC.
   - I have 2 public subnets and one private.
+
+
+
 | Name       | Subnet-ID            | Status    | VPC                           | IPv4-CIDR | IPv6-CIDR | IPv6 CIDR Association ID | Available IPv4 Addresses | Availability Zone | Availability Zone-ID | Network Border Group | Routing Table                                      | Network ACL                  | Default Subnet | Automatically Assign Public IPv4 Address | Automatically Assign Customer IPv4 Address | Customer IPv4 Pool | Automatically Assign IPv6 Address | Owner-ID      |
 |------------|-----------------------|-----------|-------------------------------|------------|-----------|--------------------------|---------------------------|-------------------|-----------------------|-----------------------|----------------------------------------------------|-------------------------------|----------------|-------------------------------------------|------------------------------------------------|--------------------|------------------------------|----------------|
 | private    | subnet-... | Available | vpc-... | 10.0.2.0/24 | –         | –                        | 251                       | eu-central-1a     | euc1-az2              | eu-central-1          | rtb-... | private                     | acl-... | No               | No                                         | No                                             | -                  | No                           | 654957580575  |
